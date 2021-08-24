@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import h5py 
 
+np.random.seed(1)
+
 def read_sweep(data, sweep_num):
     sweep_data = data.get_sweep(sweep_num)
 
@@ -115,7 +117,7 @@ def main():
                         print(si)
 
 
-    pd.DataFrame.from_records(out_metadata).to_csv(output_metadata_filename)
+    pd.DataFrame.from_records(output_metadata).to_csv(output_metadata_file_name)
             
 
 

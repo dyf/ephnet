@@ -1,1 +1,4 @@
-/ctc
+ctc/*
+train_data/*
+*.h5
+*.csv
