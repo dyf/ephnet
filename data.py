@@ -1,4 +1,3 @@
-import allensdk.core.cell_types_cache as ctc
 import pandas as pd
 import numpy as np
 import h5py 
@@ -56,6 +55,8 @@ def build_sweep_table(data):
     return pd.DataFrame.from_records(sweeps, index='sweep_number')
 
 def main():
+    import allensdk.core.cell_types_cache as ctc
+
     target_sampling_rate = 10000 # khz
     target_sample_size = int(500 * 1.0e-3 * target_sampling_rate) # 500ms
     number_of_samples = 500000    
@@ -119,7 +120,38 @@ def main():
 
     pd.DataFrame.from_records(output_metadata).to_csv(output_metadata_file_name)
             
+class EphysData:
+    def __init__(self, metadata_file_name, data_file_name):
+        self.metadata_file_name = metadata_file_name
+        self.data_file_name = data_file_name
 
+        self.metadata = pd.read_csv(metadata_file_name, index_col=0)    
 
+    def read_one(self, index, pre_size):
+        with h5py.File(self.data_file_name,"r") as f:
+            d = f["recordings"][index]
+            return {
+                "pre_i": d[:pre_size,0], 
+                "pre_v": d[:pre_size,1],
+                "i": d[pre_size:,0],
+                "v": d[pre_size:,1]
+            }
+
+    def iter(self, pre_size):
+        N = len(self.metadata)
+        with h5py.File(self.data_file_name,"r") as f:
+            d = f["recordings"]
+            print(d.shape)
+            
+            for i in range(N):
+                x = d[i]
+                yield ( 
+                    ( 
+                        x[:pre_size,0], 
+                        x[:pre_size,1], 
+                        x[pre_size:,0] 
+                    ), 
+                    x[pre_size:,1] 
+                )
 
 if __name__=="__main__": main()
