@@ -4,6 +4,10 @@ import tensorflow.keras as tfk
 import data as mdata
 import model as mmodel
 
+class CustomCallback(tfk.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        manager.save()
+
 data = mdata.EphysData(
     data_file_name="train_data/recordings.h5",
     metadata_file_name = "train_data/metadata.csv"
@@ -21,16 +25,13 @@ ds = tf.data.Dataset.from_generator(
     )
 )
 
-checkpoint_filepath = 'train_output/checkpoint-{epoch:02d}-{loss:.2f}.hdf5'
-model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-    filepath=checkpoint_filepath,
-    monitor='loss',
-    save_weights_only=True,
-    save_best_only=True,
-    save_freq='epoch')
+model = mmodel.build_cnn(1000,4000)
+optimizer = tf.keras.optimizers.Adam(0.001)
 
+model.compile(loss="mse", optimizer=optimizer, metrics=["mean_squared_error"])
 
-model = mmodel.build_model(1000,4000)
-model.compile(loss="mse", optimizer="adam", metrics=["accuracy"])
+ckpt = tf.train.Checkpoint(optimizer=optimizer, model=model)
+manager = tf.train.CheckpointManager(ckpt, './train_output', max_to_keep=3)
+manager.restore_or_initialize()
 
-model.fit(ds.batch(16), epochs=10, callbacks=[model_checkpoint_callback])
+model.fit(ds.batch(64), epochs=50, callbacks=[CustomCallback()])
