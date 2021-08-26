@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import h5py 
+import scipy.signal
 
 np.random.seed(1)
 
@@ -19,6 +20,9 @@ def read_sweep(data, sweep_num):
 def resample_sweep(i, v, t, from_hz, to_hz):
     ratio = from_hz / to_hz
     iratio = int(ratio)
+
+    i = scipy.signal.medfilt(i, kernel_size=iratio)
+    v = scipy.signal.medfilt(v, kernel_size=iratio)
 
     return i[::iratio],v[::iratio],t[::iratio]
 
