@@ -21,6 +21,9 @@ def resample_sweep(i, v, t, from_hz, to_hz):
     ratio = from_hz / to_hz
     iratio = int(ratio)
 
+    if iratio % 2 == 0:
+        iratio += 1
+
     i = scipy.signal.medfilt(i, kernel_size=iratio)
     v = scipy.signal.medfilt(v, kernel_size=iratio)
 
