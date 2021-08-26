@@ -24,15 +24,14 @@ def resample_sweep(i, v, t, from_hz, to_hz):
 
 def sample_sweep(i, v, sample_size):
     idx = np.arange(len(i))
-    stim_on = np.where((i != 0) & (idx < len(v)-sample_size-1))[0]
-
+    stim_on = np.where(i != 0)[0]
     
     if len(stim_on) == 0: 
         raise IndexError("No stimulus")
-        
-    i0 = np.random.randint(len(stim_on)-1)
-    idx = stim_on[i0]
-
+    
+    start = max(0, min(stim_on) - sample_size//2)
+    stop = min(len(v)-sample_size-1, max(stim_on) - sample_size//2)
+    idx = np.random.randint(low=start,high=stop)
     return i[idx:idx+sample_size], v[idx:idx+sample_size]
     
 
