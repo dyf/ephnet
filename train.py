@@ -35,7 +35,7 @@ def train(size, batch_size, n_epochs, lr, data_file_name, metadata_file_name, ou
     optimizer = tf.keras.optimizers.Adam(lr)
 
     model.compile(loss="mse", optimizer=optimizer)
-
+    print(model.summary())
     ckpt = tf.train.Checkpoint(optimizer=optimizer, model=model)
     manager = tf.train.CheckpointManager(ckpt, output_dir, max_to_keep=3)
     manager.restore_or_initialize()
@@ -44,8 +44,12 @@ def train(size, batch_size, n_epochs, lr, data_file_name, metadata_file_name, ou
     for i in range(n_epochs):
         md = data.metadata.sample(frac=1)
     
-        for j,row in md.iterrows():
+        for ii,(j,row) in enumerate(md.iterrows()):
             d = data.read_one(j)
+
+            if d.shape[0] < 2*size:
+                print(f"skipping {row.dataset_name}, too small")
+                continue                
             
             ds = tf.keras.preprocessing.sequence.TimeseriesGenerator(
                 data=d, 
@@ -54,13 +58,13 @@ def train(size, batch_size, n_epochs, lr, data_file_name, metadata_file_name, ou
                 stride=100, 
                 batch_size=10
             )
-            print(f"{row.dataset_name}")        
+            print(f"{row.dataset_name} {ii+1}/{len(md)}")
 
-            res = model.fit(ds, verbose=2)            
+            res = model.fit(ds, epochs=3, verbose=2)            
             
             ct += 1
 
-            if ct % 10000 == 0:
+            if ct % 5000 == 0:
                 viz(viz_data[:,0], viz_data[:,1], model, size, 10000, 30000)
                 plt.savefig(os.path.join(output_dir, f'debug_{i}_{ct:07d}.png'))
                 plt.close()

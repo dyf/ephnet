@@ -26,13 +26,14 @@ def build_mlp(pre_size):
 def build_cnn(size):
     inp = tfk.Input(shape=(size,2))
             
-    x = tfkl.Conv1D(100, kernel_size=10, padding='causal', activation='relu')(inp)
+    x = tfkl.Conv1D(256, kernel_size=9, padding='causal', activation='relu')(inp)
     x = tfkl.MaxPooling1D()(x)
-    x = tfkl.Conv1D(100, kernel_size=10, padding='causal', activation='relu')(x)
+    x = tfkl.Conv1D(128, kernel_size=9, padding='causal', activation='relu')(x)
     x = tfkl.MaxPooling1D()(x)
-    x = tfkl.Conv1D(100, kernel_size=10, padding='causal', activation='relu')(x)
+    x = tfkl.Conv1D(128, kernel_size=9, padding='causal', activation='relu')(x)
     x = tfkl.MaxPooling1D()(x)            
     x = tfkl.Reshape(target_shape=(x.shape[1]*x.shape[2],))(x)
+    x = tfkl.Dense(128, activation='relu')(x)
     x = tfkl.Dense(1, activation='linear')(x)    
     
     return tfk.Model(inputs=inp, outputs=x)
