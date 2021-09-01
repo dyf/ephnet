@@ -80,6 +80,7 @@ def main():
 
         for ci, row in cells.iterrows():
             cell_id = row.id
+            
             print(ci, cell_id)
 
             cell_data = cache.get_ephys_data(cell_id)
@@ -88,6 +89,10 @@ def main():
             
             for sweep_num in sweep_table.index:
                 i,v,t,s = read_sweep(cell_data, sweep_num)
+
+                if np.abs(i).max() > 1e11: #hmm!
+                    print(f"skipping {cell_id} {sweep_num}")
+                    continue
                 i,v,t = resample_sweep(i, v, t, s, target_sampling_rate)
 
                 ds_name = f"{cell_id}_{sweep_num}"

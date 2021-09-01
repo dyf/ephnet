@@ -34,7 +34,7 @@ def train(size, batch_size, n_epochs, lr, data_file_name, metadata_file_name, ou
     model = mmodel.build_cnn(size)
     optimizer = tf.keras.optimizers.Adam(lr)
 
-    model.compile(loss="mse", optimizer=optimizer, metrics=["mean_squared_error"])
+    model.compile(loss="mse", optimizer=optimizer)
 
     ckpt = tf.train.Checkpoint(optimizer=optimizer, model=model)
     manager = tf.train.CheckpointManager(ckpt, output_dir, max_to_keep=3)
@@ -54,20 +54,18 @@ def train(size, batch_size, n_epochs, lr, data_file_name, metadata_file_name, ou
                 stride=100, 
                 batch_size=10
             )
-        
-            model.fit(ds, verbose=2)            
+            print(f"{row.dataset_name}")        
 
+            res = model.fit(ds, verbose=2)            
+            
             ct += 1
 
-            if ct % 1000 == 0:
+            if ct % 10000 == 0:
                 viz(viz_data[:,0], viz_data[:,1], model, size, 10000, 30000)
-                plt.savefig(os.path.join(output_dir, f'debug_{ct:05d}.png'))
+                plt.savefig(os.path.join(output_dir, f'debug_{i}_{ct:07d}.png'))
                 plt.close()
                 print(f"epoch {i+1}/{n_epochs}, finished {j+1}/{len(md)} sweeps")
-
-            
-
-        manager.save()
+                manager.save()
 
 if __name__ == "__main__":
     train(**{
